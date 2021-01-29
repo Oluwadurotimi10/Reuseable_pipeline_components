@@ -5,6 +5,7 @@ def predict(y_test,model,test_loader):
     #importing libraries
     import joblib
     import numpy as np
+    import pandas as pd
     import torch
 
     #loading the model and inputs
@@ -35,7 +36,14 @@ def predict(y_test,model,test_loader):
         acc = binary_acc(y_pred_list, y_test)
         #print(acc)
     #Serialize the output
-    joblib.dump(y_pred_list,'predictions')
+    #saving prediction as csv
+    df1 = pd.DataFrame(y_test)
+    df1.reset_index(inplace=True)
+    df1.drop(columns=['index'], axis=1, inplace=True)
+    df2 = pd.DataFrame(y_pred_list)
+    df = pd.concat([df1, df2], axis=1)
+    df.columns=['target','predicted']
+    df.to_csv('part-result_pytorch.csv')
 
 #defining and parsing arguments
 if __name__ == '__main__':

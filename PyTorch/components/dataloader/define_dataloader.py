@@ -25,7 +25,7 @@ def dataloader(X_train,y_train,X_test):
         
         def __len__(self):
             return len(self.X_data)
-    train_data = trainData(torch.FloatTensor(X_train), torch.FloatTensor(y_train.values))
+    train_data = trainData(torch.FloatTensor(X_train), torch.FloatTensor(y_train))
     #test data
     class testData(Dataset):
         def __init__(self, X_data):
@@ -40,11 +40,11 @@ def dataloader(X_train,y_train,X_test):
     #model hyperparameter
     BATCH_SIZE =10
     #defining dataloader to load data in batches
-    train_loader = DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
-    test_loader = DataLoader(dataset=test_data, batch_size=1)  
+    train_loader = DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
+    test_loader = DataLoader(dataset=test_data, batch_size=1, num_workers=0)  
     #saving the dataloaders
-    joblib.dump(train_loader,'train_loader')
-    joblib.dump(test_loader,'test_loader')
+    torch.save(train_loader,'train_loader.pth')
+    torch.save(test_loader,'test_loader.pth')
 
 #defining and parsing arguments
 if __name__ == '__main__':

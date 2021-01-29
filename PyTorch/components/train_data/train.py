@@ -78,4 +78,4 @@ if __name__ == '__main__':
     parser.add_argument('--train_loader')
     args = parser.parse_args()
     print('Done with training')
-    train(args.X_train,args.y_train, args.train_loader)
+    train(args.X_train, args.y_train, args.train_loader)
