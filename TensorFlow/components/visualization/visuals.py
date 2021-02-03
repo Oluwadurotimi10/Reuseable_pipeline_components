@@ -58,3 +58,18 @@ if __name__ == '__main__':
     parser.add_argument('--matrix_data')
     args = parser.parse_args()
     visuals(args.test_loss, args.test_acc, args.matrix_data)
+
+"""
+ #saving pred and actual as csv file
+    vocab = [0,1]
+    cm = confusion_matrix(y_test, y_pred, labels=vocab)
+    cm_data = []
+    for target_index,target_row in enumerate(cm):
+        for predicted_index, count in enumerate(target_row):
+            cm_data.append((vocab[target_index], vocab[predicted_index], count))
+
+    cm_df = pd.DataFrame(cm_data, columns=['target','predicted','count'])
+    
+    #serialize data to be used for confusion matrix
+    joblib.dump(cm_df, 'matrix_data')
+"""

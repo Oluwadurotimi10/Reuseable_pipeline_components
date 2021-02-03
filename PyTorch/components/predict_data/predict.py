@@ -1,18 +1,57 @@
 #importing libraries
 import argparse
 
-def predict(y_test,model,test_loader):
+def predict(X_test, y_test,model):
     #importing libraries
-    import joblib
     import numpy as np
-    import pandas as pd
     import torch
+    import torch.nn as nn
+    import torch.optim as optim
+    from torch.utils.data import Dataset, DataLoader
 
     #loading the model and inputs
+    X_test = np.load(X_test)
     y_test = np.load(y_test)
-    classifier = classifier.load_state_dict(torch.load(model))
-    test_loader = joblib.load(test_loader)
 
+     #defining neural network architecture
+    class binaryClassification(nn.Module):
+        def __init__(self):
+            super(binaryClassification, self).__init__()
+            #number of input features is 12
+            self.layer_1 = nn.Linear(12, 16)
+            self.layer_2 = nn.Linear(16, 8)
+            self.layer_out = nn.Linear(8, 1) 
+            self.relu = nn.ReLU()
+            self.dropout = nn.Dropout(p=0.1)
+            self.batchnorm1 = nn.BatchNorm1d(16)
+            self.batchnorm2 = nn.BatchNorm1d(8)       
+        #feed forward network
+        def forward(self, inputs):
+            x = self.relu(self.layer_1(inputs))
+            x = self.batchnorm1(x)
+            x = self.relu(self.layer_2(x))
+            x = self.batchnorm2(x)
+            x = self.dropout(x)
+            x = self.layer_out(x)
+            return x
+    
+    #loading model
+    classifier = binaryClassification()
+    classifier.load_state_dict(torch.load(model))
+    
+     #test data
+    class testData(Dataset):
+        def __init__(self, X_data):
+            self.X_data = X_data
+
+        def __getitem__(self,index):
+            return self.X_data[index]
+
+        def __len__(self):
+            return len(self.X_data)
+
+    test_data = testData(torch.FloatTensor(X_test))
+    test_loader = DataLoader(dataset=test_data, batch_size=1, num_workers=0)
     #function to calculate accuracy
     def binary_acc(y_pred, y_test):
         y_pred_tag = torch.round(torch.sigmoid(y_pred))
@@ -29,29 +68,24 @@ def predict(y_test,model,test_loader):
         for X_batch in test_loader:
             y_test_pred = classifier(X_batch)
             y_test_pred = torch.sigmoid(y_test_pred)
-            y_pred_tag = torch.round(y_test_pred) 
+            y_pred_tag = torch.round(y_test_pred)
             y_pred_list.append(y_pred_tag.cpu().numpy())
-        y_pred_list = [i.squeeze().tolist() for i in y_pred_list]
-        #accuracy
-        acc = binary_acc(y_pred_list, y_test)
-        #print(acc)
-    #Serialize the output
-    #saving prediction as csv
-    df1 = pd.DataFrame(y_test)
-    df1.reset_index(inplace=True)
-    df1.drop(columns=['index'], axis=1, inplace=True)
-    df2 = pd.DataFrame(y_pred_list)
-    df = pd.concat([df1, df2], axis=1)
-    df.columns=['target','predicted']
-    df.to_csv('part-result_pytorch.csv')
+        y_pred_list = [i.squeeze().tolist() for i in y_pred_list] 
+        #y_pred_list = [bool(i) for i in y_pred_list]
+
+    acc = binary_acc(y_pred_list, y_test)  
+    with open('results.txt', 'w') as result:
+        result.write(" Prediction: {}, Actual: {}, Acc: {}".format(y_pred_list,y_test,acc))
+    
+    print('Prediction has be saved successfully!')
 
 #defining and parsing arguments
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--X_test')
     parser.add_argument('--y_test')
     parser.add_argument('--model')
-    parser.add_argument('--test_loader')
     args = parser.parse_args()
     print('Prediction has be saved successfully!')
-    predict(args.y_test, args.model, args.test_loader)
+    predict(args.X_test, args.y_test, args.model)
     

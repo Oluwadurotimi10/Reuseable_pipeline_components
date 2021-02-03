@@ -1,23 +1,39 @@
 #importing libraries
 import argparse
 
-def train(X_train, y_train, train_loader):
+def train(X_train, y_train):
     #importing libraries
     import numpy as np
     import joblib
     import torch
     import torch.nn as nn
     import torch.optim as optim
+    from torch.utils.data import Dataset, DataLoader
 
    #loading the inputs
     X_train = np.load(X_train)
     y_train = np.load(y_train)
-    #deserialize data from output directory
-    train_loader = joblib.load(train_loader)
+    
     #setting model hyper-parameters
     EPOCHS = 150
     BATCH_SIZE =10
     LEARNING_RATE = 0.001
+
+     #train data
+    class trainData(Dataset):
+        def __init__(self, X_data, y_data):
+            self.X_data = X_data
+            self.y_data = y_data
+
+        def __getitem__(self,index):
+            return self.X_data[index], self.y_data[index]
+
+        def __len__(self):
+            return len(self.X_data)
+        
+    train_data = trainData(torch.FloatTensor(X_train), torch.FloatTensor(y_train))
+    train_loader = DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
+    
     #defining neural network architecture
     class binaryClassification(nn.Module):
         def __init__(self):
@@ -66,16 +82,15 @@ def train(X_train, y_train, train_loader):
             optimizer.step()
             epoch_loss += loss.item()
             epoch_acc += acc.item()
-            print(f'Epoch {e+0:03}: | Loss:{epoch_loss/len(train_loader):.5f} | Acc:{epoch_acc/len(train_loader):.3f}')
-    #saving model
-    torch.save(classifier.state_dict(),'pyclassifier.pth')
+            #print(f'Epoch {e+0:03}: | Loss:{epoch_loss/len(train_loader):.5f} | Acc:{epoch_acc/len(train_loader):.3f}')
+     #saving model
+    torch.save(classifier.state_dict(), 'pyclassifier.pt')
     
 #defining and parsing arguments
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--X_train')
     parser.add_argument('--y_train')
-    parser.add_argument('--train_loader')
     args = parser.parse_args()
     print('Done with training')
-    train(args.X_train, args.y_train, args.train_loader)
+    train(args.X_train, args.y_train)

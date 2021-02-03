@@ -22,21 +22,13 @@ def predict(X_test,y_test,model):
     # create a threshold for the confution matrics
     y_pred=(y_pred>0.5)
 
-    #saving pred and actual as csv file
-    vocab = [0,1]
-    cm = confusion_matrix(y_test, y_pred, labels=vocab)
-    cm_data = []
-    for target_index,target_row in enumerate(cm):
-        for predicted_index, count in enumerate(target_row):
-            cm_data.append((vocab[target_index], vocab[predicted_index], count))
-
-    cm_df = pd.DataFrame(cm_data, columns=['target','predicted','count'])
-    
-    #serialize data to be used for confusion matrix
-    joblib.dump(cm_df, 'matrix_data')
     #saving the test_loss and test_acc
-    joblib.dump(test_loss, 'test_loss')
-    joblib.dump(test_acc, 'test_acc')
+    with open('performance.txt', 'w') as f:
+        f.write("Test_loss: {}, Test_accuracy: {} ".format(test_loss,test_acc))
+
+    #saving the predictions
+    with open('results.txt', 'w') as result:
+        result.write(" Prediction: {}, Actual: {} ".format(y_pred,y_test.astype(np.bool)))
     
 #defining and parsing arguments
 if __name__ == '__main__':

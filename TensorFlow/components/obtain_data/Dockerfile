@@ -1,4 +1,4 @@
-FROM python:3.7.1
+FROM python:3.6
 WORKDIR /obtain_data
 RUN pip install -U joblib pandas
 COPY obtain_data.py /obtain_data
