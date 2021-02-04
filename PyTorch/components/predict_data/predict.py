@@ -71,11 +71,13 @@ def predict(X_test, y_test,model):
             y_pred_tag = torch.round(y_test_pred)
             y_pred_list.append(y_pred_tag.cpu().numpy())
         y_pred_list = [i.squeeze().tolist() for i in y_pred_list] 
-        #y_pred_list = [bool(i) for i in y_pred_list]
 
-    acc = binary_acc(y_pred_list, y_test)  
+    acc = binary_acc(torch.FloatTensor(y_pred_list), torch.FloatTensor(y_test))
+    accu = acc.item()
+    accuracy = accu/len(y_pred_list)
+
     with open('results.txt', 'w') as result:
-        result.write(" Prediction: {}, Actual: {}, Acc: {}".format(y_pred_list,y_test,acc))
+        result.write(" Prediction: {}, Actual: {}, Acc: {}".format(y_pred_list,y_test,accuracy))
     
     print('Prediction has be saved successfully!')
 
